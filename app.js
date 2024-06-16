@@ -1,3 +1,7 @@
+if(process.env.NODE_ENV!="production"){
+    require("dotenv").config();
+}
+const MongoStore = require('connect-mongo');
 const express= require("express");
 const app =express();
 const mongoose=require("mongoose");
@@ -10,7 +14,7 @@ const reviewRouter=require("./route/review.js");
 const userRouter=require("./route/user.js");
 const listingRouter=require("./route/listing.js");
 
-const MONGO_URL="mongodb://127.0.0.1:27017/wanderlust";
+const dbUrl=process.env.ATLASDB_URL;
 const session=require("express-session");
 const flash=require("connect-flash");
 const passport=require("passport");
@@ -23,17 +27,28 @@ main().then(()=>{
     console.log(err);
 });
 async function main(){
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(dbUrl);
 }
 app.set("view engine","ejs");
 app.set("views",path.join(__dirname,"views"));
-app.use(express.urlencoded({extended:true}));//when api made from get request send get request to another api
+app.use(express.urlencoded({extended:true}));
 app.use(methodOverride("_method"));
 app.engine('ejs',ejsMate);
 app.use(express.static(path.join(__dirname,"/public")));
 
+const store=MongoStore.create({
+    mongoUrl:dbUrl,
+    crypto:{
+        secret:process.env.SECRET,
+    },
+    touchAfter:24*3600,
+});
+store.on("error",()=>{
+    console.log("Error in Mongo Session Store",err);
+});
 const sessionOptions={
-    secret:"mysupersecretcode",
+    store,
+    secret:process.env.SECRET,
     resave:false,
     saveUninitialized:true,
     cookie:{
@@ -42,9 +57,7 @@ const sessionOptions={
         httpOnly: true,
     }
 }
-app.get("/",(req,res)=>{
-    res.send("HI,i am root");
-});
+
 app.use(session(sessionOptions));
 app.use(flash());
 app.use(passport.initialize());
