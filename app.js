@@ -1,7 +1,6 @@
 if(process.env.NODE_ENV!="production"){
     require("dotenv").config();
 }
-const MongoStore = require('connect-mongo');
 const express= require("express");
 const app =express();
 const mongoose=require("mongoose");
@@ -9,13 +8,13 @@ const path=require("path");
 const methodOverride=require("method-override");
 const ejsMate=require("ejs-mate");
 const ExpressError=require("./utils/ExpressError.js");
-
+const session=require("express-session");
+const MongoStore = require('connect-mongo');
 const reviewRouter=require("./route/review.js");
 const userRouter=require("./route/user.js");
 const listingRouter=require("./route/listing.js");
 
 const dbUrl=process.env.ATLASDB_URL;
-const session=require("express-session");
 const flash=require("connect-flash");
 const passport=require("passport");
 const LocalStrategy =require("passport-local");
@@ -39,9 +38,9 @@ app.use(express.static(path.join(__dirname,"/public")));
 const store=MongoStore.create({
     mongoUrl:dbUrl,
     crypto:{
-        secret:process.env.SECRET,
+        secret:process.env.SECRET, 
     },
-    touchAfter:24*3600,
+    touchAfter:24 * 3600,
 });
 store.on("error",()=>{
     console.log("Error in Mongo Session Store",err);
