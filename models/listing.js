@@ -8,10 +8,8 @@ const listingSchema = new Schema({
     },
     description:String,
     image:{
-        type:String,
-        default:"https://www.rawpixel.com/image/3337909/free-photo-image-waterfall-forest-tree-adventure",
-        set: (v) =>v ==="" ? "https://www.rawpixel.com/image/3337909/free-photo-image-waterfall-forest-tree-adventure" 
-        :v,
+       url:String,
+       filename:String,
     },
     price:Number,
     location:String,
